@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>Mein Dienstplan</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mein Dienstplan">
+<meta name="theme-color" content="#eef5ef">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Helvetica Neue", Arial, sans-serif;
+            background: #eef5ef;
+            color: #173f32;
+        }
+
+        .app {
+            min-height: 100vh;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 25px 20px 30px;
+        }
+
+        /* =========================
+           KOPF
+        ========================= */
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 800;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #668077;
+            font-size: 16px;
+        }
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .navigation {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            background: white;
+            padding: 6px;
+            border-radius: 16px;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+        }
+
+        .navigation button {
+            flex: 1;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 6px;
+            background: transparent;
+            color: #668077;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .navigation button.aktiv {
+            background: #237d63;
+            color: white;
+        }
+
+        /* =========================
+           KARTEN
+        ========================= */
+
+        .kalender,
+        .seiten-karte {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+        }
+
+        /* =========================
+           MONAT
+        ========================= */
+
+        .monat-kopf {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .monat-kopf h2 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .monat-kopf.seiten-navigation {
+            margin-bottom: 20px;
+        }
+
+        .monat-kopf.seiten-navigation h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .pfeil {
+            border: none;
+            background: #e7f1ea;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 23px;
+            color: #173f32;
+            cursor: pointer;
+        }
+
+        /* =========================
+           KALENDER
+        ========================= */
+
+        .wochentage,
+        .tage {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 7px;
+        }
+
+        .wochentag {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #82938d;
+            padding-bottom: 8px;
+        }
+
+        .tag {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 13px;
+            background: #f4f7f5;
+            font-size: 15px;
+            font-weight: 600;
+            color: #173f32;
+            cursor: pointer;
+        }
+
+        .tag.heute {
+            box-shadow: inset 0 0 0 3px #173f32;
+        }
+
+        /* =========================
+           KATEGORIEN
+        ========================= */
+
+        .tag.diako {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .tag.minijob {
+            background: #F39C12;
+            color: white;
+        }
+
+        .tag.frei {
+            background: #2ECC71;
+            color: white;
+        }
+
+        .tag.urlaub {
+            background: #9B59B6;
+            color: white;
+        }
+
+        .tag.arzt {
+            background: #E57373;
+            color: white;
+        }
+
+        /* =========================
+           NEUER EINTRAG
+        ========================= */
+
+        .neu-button {
+            width: 100%;
+            margin-top: 25px;
+            border: none;
+            border-radius: 18px;
+            padding: 17px;
+            background: #237d63;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(35,125,99,0.25);
+            cursor: pointer;
+        }
+
+        /* =========================
+           FORMULAR
+        ========================= */
+
+        #eintrag-fenster {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+        }
+
+        #eintrag-fenster h2 {
+            margin-top: 0;
+        }
+
+        #eintrag-fenster label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        #eintrag-fenster input,
+        #eintrag-fenster select,
+        #eintrag-fenster textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d6e1dc;
+            border-radius: 12px;
+            background: #f8faf9;
+            font-size: 16px;
+        }
+
+        #eintrag-fenster textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        #diako-zeit {
+            color: #668077;
+            font-weight: 600;
+        }
+
+        #eintrag-speichern,
+        #eintrag-loeschen,
+        #eintrag-abbrechen {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            border: none;
+            border-radius: 13px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #eintrag-speichern {
+            margin-top: 20px;
+            background: #237d63;
+            color: white;
+        }
+
+        #eintrag-loeschen {
+            background: #E57373;
+            color: white;
+        }
+
+        #eintrag-abbrechen {
+            background: #e7f1ea;
+            color: #173f32;
+        }
+
+        /* =========================
+           SEITEN
+        ========================= */
+
+        #stunden-seite,
+        #gehalt-seite {
+            display: none;
+        }
+
+        /* =========================
+           STUNDEN
+        ========================= */
+
+        .stunden-box {
+            padding: 18px;
+            margin-top: 12px;
+            background: #f4f7f5;
+            border-radius: 16px;
+        }
+
+        .stunden-box span {
+            display: block;
+            color: #668077;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stunden-box strong {
+            display: block;
+            font-size: 21px;
+        }
+
+        .diako-box {
+            border-left: 5px solid #4A90E2;
+        }
+
+        .minijob-box {
+            border-left: 5px solid #F39C12;
+        }
+
+        /* =========================
+           GEHALT
+        ========================= */
+
+        .gehalt-box {
+            padding: 17px;
+            margin-top: 12px;
+            background: #f4f7f5;
+            border-radius: 15px;
+        }
+
+        .gehalt-zeile {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 8px 0;
+        }
+
+        .gehalt-zeile span {
+            color: #668077;
+        }
+
+        .gehalt-zeile strong {
+            text-align: right;
+        }
+
+        .gehalt-gesamt {
+            margin-top: 18px;
+            padding: 19px;
+            background: #e7f1ea;
+            border-radius: 16px;
+        }
+
+        .gehalt-gesamt span {
+            display: block;
+            color: #668077;
+            margin-bottom: 5px;
+        }
+
+        .gehalt-gesamt strong {
+            display: block;
+            font-size: 27px;
+        }
+
+        .hinweis {
+            margin-top: 18px;
+            color: #668077;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           DATENSICHERUNG
+        ========================= */
+
+        .backup-karte {
+            margin-top: 20px;
+        }
+
+        .backup-buttons {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .backup-buttons button {
+            width: 100%;
+            border: none;
+            border-radius: 13px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #daten-exportieren {
+            background: #237d63;
+            color: white;
+        }
+
+        #daten-import-button {
+            background: #e7f1ea;
+            color: #173f32;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="header">
+        <h1>Mein Dienstplan</h1>
+        <p>Meine Dienste & Termine</p>
+    </header>
+
+    <nav class="navigation">
+        <button id="nav-dienstplan" class="aktiv">
+            Dienstplan
+        </button>
+
+        <button id="nav-stunden">
+            Stunden
+        </button>
+
+        <button id="nav-gehalt">
+            Gehalt
+        </button>
+    </nav>
+
+    <!-- =========================
+         DIENSTPLAN
+    ========================= -->
+
+    <section id="dienstplan-seite">
+
+        <div class="kalender">
+
+            <div class="monat-kopf">
+
+                <button
+                    class="pfeil"
+                    id="monat-zurueck"
+                >
+                    ‹
+                </button>
+
+                <h2 id="monat-titel"></h2>
+
+                <button
+                    class="pfeil"
+                    id="monat-weiter"
+                >
+                    ›
+                </button>
+
+            </div>
+
+            <div class="wochentage">
+                <div class="wochentag">Mo</div>
+                <div class="wochentag">Di</div>
+                <div class="wochentag">Mi</div>
+                <div class="wochentag">Do</div>
+                <div class="wochentag">Fr</div>
+                <div class="wochentag">Sa</div>
+                <div class="wochentag">So</div>
+            </div>
+
+            <div
+                class="tage"
+                id="kalender-tage"
+            ></div>
+
+        </div>
+
+        <button
+            class="neu-button"
+            id="neuer-eintrag"
+        >
+            + Neuer Eintrag
+        </button>
+
+        <!-- FORMULAR -->
+
+        <div id="eintrag-fenster">
+
+            <h2 id="formular-titel">
+                Neuer Eintrag
+            </h2>
+
+            <label for="eintrag-datum">
+                Datum
+            </label>
+
+            <input
+                type="date"
+                id="eintrag-datum"
+            >
+
+            <label for="eintrag-kategorie">
+                Kategorie
+            </label>
+
+            <select id="eintrag-kategorie">
+
+                <option value="diako">
+                    Diako
+                </option>
+
+                <option value="minijob">
+                    Minijob
+                </option>
+
+                <option value="frei">
+                    Frei
+                </option>
+
+                <option value="urlaub">
+                    Urlaub
+                </option>
+
+                <option value="arzt">
+                    Arzt / Termin
+                </option>
+
+            </select>
+
+            <div id="zeit-bereich">
+
+                <label for="eintrag-beginn">
+                    Beginn
+                </label>
+
+                <input
+                    type="time"
+                    id="eintrag-beginn"
+                >
+
+                <label for="eintrag-ende">
+                    Ende
+                </label>
+
+                <input
+                    type="time"
+                    id="eintrag-ende"
+                >
+
+            </div>
+
+            <p id="diako-zeit">
+                Diako-Nachtdienst:
+                20:30–06:30 Uhr
+            </p>
+
+            <label for="eintrag-kommentar">
+                Kommentar
+            </label>
+
+            <textarea
+                id="eintrag-kommentar"
+                placeholder="z. B. Orthopädie-Termin"
+            ></textarea>
+
+            <button id="eintrag-speichern">
+                Speichern
+            </button>
+
+            <button id="eintrag-loeschen">
+                Eintrag löschen
+            </button>
+
+            <button id="eintrag-abbrechen">
+                Abbrechen
+            </button>
+
+        </div>
+
+        <!-- DATENSICHERUNG -->
+
+        <div class="seiten-karte backup-karte">
+
+            <h2>Datensicherung</h2>
+
+            <p class="hinweis">
+                Sichere deine Dienstplandaten als Datei
+                oder stelle eine vorhandene Sicherung wieder her.
+            </p>
+
+            <div class="backup-buttons">
+
+                <button id="daten-exportieren">
+                    Daten sichern
+                </button>
+
+                <input
+                    type="file"
+                    id="daten-importieren"
+                    accept="application/json"
+                    style="display: none;"
+                >
+
+                <button id="daten-import-button">
+                    Sicherung wiederherstellen
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         STUNDEN
+    ========================= -->
+
+    <section id="stunden-seite">
+
+        <div class="seiten-karte">
+
+            <h2>Stundenübersicht</h2>
+
+            <div class="monat-kopf seiten-navigation">
+
+                <button
+                    class="pfeil"
+                    id="stunden-zurueck"
+                >
+                    ‹
+                </button>
+
+                <h3 id="stunden-monat-titel"></h3>
+
+                <button
+                    class="pfeil"
+                    id="stunden-weiter"
+                >
+                    ›
+                </button>
+
+            </div>
+
+            <div class="stunden-box diako-box">
+
+                <span>
+                    Gesamtstunden Diako
+                </span>
+
+                <strong id="diako-stunden">
+                    0 Stunden
+                </strong>
+
+            </div>
+
+            <div class="stunden-box minijob-box">
+
+                <span>
+                    Gesamtstunden Minijob
+                </span>
+
+                <strong id="minijob-stunden">
+                    0 Stunden
+                </strong>
+
+            </div>
+
+            <div class="stunden-box diako-box">
+
+                <span>
+                    Diako-Dienste
+                </span>
+
+                <strong id="diako-dienste">
+                    0
+                </strong>
+
+            </div>
+
+            <div class="stunden-box minijob-box">
+
+                <span>
+                    Minijob-Dienste
+                </span>
+
+                <strong id="minijob-dienste">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         GEHALT
+    ========================= -->
+
+    <section id="gehalt-seite">
+
+        <div class="seiten-karte">
+
+            <h2>Minijob-Gehalt</h2>
+
+            <div class="monat-kopf seiten-navigation">
+
+                <button
+                    class="pfeil"
+                    id="gehalt-zurueck"
+                >
+                    ‹
+                </button>
+
+                <h3 id="gehalt-monat-titel"></h3>
+
+                <button
+                    class="pfeil"
+                    id="gehalt-weiter"
+                >
+                    ›
+                </button>
+
+            </div>
+
+            <div class="gehalt-box">
+
+                <div class="gehalt-zeile">
+                    <span>Arbeitsstunden</span>
+                    <strong id="gehalt-stunden">
+                        0 Stunden
+                    </strong>
+                </div>
+
+                <div class="gehalt-zeile">
+                    <span>Stundenlohn</span>
+                    <strong>18,00 €</strong>
+                </div>
+
+                <div class="gehalt-zeile">
+                    <span>Grundlohn</span>
+                    <strong id="grundlohn">
+                        0,00 €
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="gehalt-box">
+
+                <div class="gehalt-zeile">
+                    <span>Nachtstunden</span>
+                    <strong id="nachtstunden">
+                        0 Stunden
+                    </strong>
+                </div>
+
+                <div class="gehalt-zeile">
+                    <span>Nachtzuschlag</span>
+                    <strong>25 %</strong>
+                </div>
+
+                <div class="gehalt-zeile">
+                    <span>Zuschlag</span>
+                    <strong id="nachtzuschlag">
+                        0,00 €
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="gehalt-gesamt">
+
+                <span>
+                    Geschätztes Minijob-Gehalt
+                </span>
+
+                <strong id="gehalt-gesamt">
+                    0,00 €
+                </strong>
+
+            </div>
+
+            <p class="hinweis">
+                Der Nachtzuschlag wird nur für
+                Arbeitszeit zwischen 20:00 und
+                06:00 Uhr berechnet.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+
+    /* =========================
+       EINSTELLUNGEN
+    ========================= */
+
+    const STUNDENLOHN = 18;
+    const NACHTZUSCHLAG = 0.25;
+
+    const monate = [
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember"
+    ];
+
+    const heute = new Date();
+
+    let jahr = heute.getFullYear();
+    let monat = heute.getMonth();
+
+    const monatTitel =
+        document.getElementById("monat-titel");
+
+    const kalenderTage =
+        document.getElementById("kalender-tage");
+
+    const kategorieFeld =
+        document.getElementById("eintrag-kategorie");
+
+    const zeitBereich =
+        document.getElementById("zeit-bereich");
+
+    const diakoZeit =
+        document.getElementById("diako-zeit");
+
+    const eintragFenster =
+        document.getElementById("eintrag-fenster");
+
+    /* =========================
+       SPEICHER
+    ========================= */
+
+    function eintraegeLaden() {
+
+        return JSON.parse(
+            localStorage.getItem("dienstplan")
+        ) || [];
+
+    }
+
+    function eintraegeSpeichern(eintraege) {
+
+        localStorage.setItem(
+            "dienstplan",
+            JSON.stringify(eintraege)
+        );
+
+    }
+
+    /* =========================
+       DATUM
+    ========================= */
+
+    function datumErzeugen(tag) {
+
+        return (
+            jahr +
+            "-" +
+            String(monat + 1).padStart(2, "0") +
+            "-" +
+            String(tag).padStart(2, "0")
+        );
+
+    }
+
+    /* =========================
+       FORMULAR
+    ========================= */
+
+    function zeitenAktualisieren() {
+
+        const kategorie =
+            kategorieFeld.value;
+
+        if (kategorie === "diako") {
+
+            zeitBereich.style.display =
+                "none";
+
+            diakoZeit.style.display =
+                "block";
+
+        }
+
+        else if (
+            kategorie === "minijob" ||
+            kategorie === "arzt"
+        ) {
+
+            zeitBereich.style.display =
+                "block";
+
+            diakoZeit.style.display =
+                "none";
+
+        }
+
+        else {
+
+            zeitBereich.style.display =
+                "none";
+
+            diakoZeit.style.display =
+                "none";
+
+        }
+
+    }
+
+    function formularLeeren(datum = "") {
+
+        document
+            .getElementById("formular-titel")
+            .textContent =
+            "Neuer Eintrag";
+
+        document
+            .getElementById("eintrag-datum")
+            .value =
+            datum;
+
+        kategorieFeld.value =
+            "diako";
+
+        document
+            .getElementById("eintrag-beginn")
+            .value =
+            "";
+
+        document
+            .getElementById("eintrag-ende")
+            .value =
+            "";
+
+        document
+            .getElementById("eintrag-kommentar")
+            .value =
+            "";
+
+        document
+            .getElementById("eintrag-loeschen")
+            .style.display =
+            "none";
+
+        zeitenAktualisieren();
+
+    }
+
+    function formularMitEintragOeffnen(datum) {
+
+        const vorhandenerEintrag =
+            eintraegeLaden().find(
+                function (eintrag) {
+
+                    return (
+                        eintrag.datum === datum
+                    );
+
+                }
+            );
+
+        if (vorhandenerEintrag) {
+
+            document
+                .getElementById("formular-titel")
+                .textContent =
+                "Eintrag bearbeiten";
+
+            document
+                .getElementById("eintrag-datum")
+                .value =
+                vorhandenerEintrag.datum;
+
+            kategorieFeld.value =
+                vorhandenerEintrag.kategorie;
+
+            document
+                .getElementById("eintrag-beginn")
+                .value =
+                vorhandenerEintrag.beginn || "";
+
+            document
+                .getElementById("eintrag-ende")
+                .value =
+                vorhandenerEintrag.ende || "";
+
+            document
+                .getElementById("eintrag-kommentar")
+                .value =
+                vorhandenerEintrag.kommentar || "";
+
+            document
+                .getElementById("eintrag-loeschen")
+                .style.display =
+                "block";
+
+            zeitenAktualisieren();
+
+        }
+
+        else {
+
+            formularLeeren(datum);
+
+        }
+
+        eintragFenster.style.display =
+            "block";
+
+    }
+
+    /* =========================
+       KALENDER
+    ========================= */
+
+    function kalenderAnzeigen() {
+
+        kalenderTage.innerHTML = "";
+
+        monatTitel.textContent =
+            monate[monat] +
+            " " +
+            jahr;
+
+        const ersterTag =
+            new Date(
+                jahr,
+                monat,
+                1
+            );
+
+        const letzterTag =
+            new Date(
+                jahr,
+                monat + 1,
+                0
+            ).getDate();
+
+        const leereFelder =
+            (ersterTag.getDay() + 6) % 7;
+
+        const eintraege =
+            eintraegeLaden();
+
+        for (
+            let i = 0;
+            i < leereFelder;
+            i++
+        ) {
+
+            kalenderTage.appendChild(
+                document.createElement("div")
+            );
+
+        }
+
+        for (
+            let tag = 1;
+            tag <= letzterTag;
+            tag++
+        ) {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            const datum =
+                datumErzeugen(tag);
+
+            button.className =
+                "tag";
+
+            button.textContent =
+                tag;
+
+            const gespeicherterEintrag =
+                eintraege.find(
+                    function (eintrag) {
+
+                        return (
+                            eintrag.datum === datum
+                        );
+
+                    }
+                );
+
+            if (gespeicherterEintrag) {
+
+                button.classList.add(
+                    gespeicherterEintrag.kategorie
+                );
+
+            }
+
+            if (
+                tag === heute.getDate() &&
+                monat === heute.getMonth() &&
+                jahr === heute.getFullYear()
+            ) {
+
+                button.classList.add(
+                    "heute"
+                );
+
+            }
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    formularMitEintragOeffnen(
+                        datum
+                    );
+
+                }
+            );
+
+            kalenderTage.appendChild(
+                button
+            );
+
+        }
+
+    }
+
+    /* =========================
+       ZEITBERECHNUNG
+    ========================= */
+
+    function zeitInMinuten(zeit) {
+
+        const teile =
+            zeit
+                .split(":")
+                .map(Number);
+
+        return (
+            teile[0] * 60 +
+            teile[1]
+        );
+
+    }
+
+    function stundenBerechnen(
+        beginn,
+        ende
+    ) {
+
+        if (!beginn || !ende) {
+            return 0;
+        }
+
+        const start =
+            zeitInMinuten(beginn);
+
+        let stopp =
+            zeitInMinuten(ende);
+
+        if (stopp <= start) {
+
+            stopp +=
+                24 * 60;
+
+        }
+
+        return (
+            stopp - start
+        ) / 60;
+
+    }
+
+    /* =========================
+       NACHTSTUNDEN MINIJOB
+       20:00 BIS 06:00
+    ========================= */
+
+    function nachtstundenBerechnen(
+        beginn,
+        ende
+    ) {
+
+        if (!beginn || !ende) {
+            return 0;
+        }
+
+        const start =
+            zeitInMinuten(beginn);
+
+        let stopp =
+            zeitInMinuten(ende);
+
+        if (stopp <= start) {
+
+            stopp +=
+                24 * 60;
+
+        }
+
+        const nachtStart =
+            20 * 60;
+
+        const nachtEnde =
+            24 * 60 +
+            6 * 60;
+
+        const ueberschneidungStart =
+            Math.max(
+                start,
+                nachtStart
+            );
+
+        const ueberschneidungEnde =
+            Math.min(
+                stopp,
+                nachtEnde
+            );
+
+        const minuten =
+            Math.max(
+                0,
+                ueberschneidungEnde -
+                ueberschneidungStart
+            );
+
+        return minuten / 60;
+
+    }
+
+    /* =========================
+       FORMATIERUNG
+    ========================= */
+
+    function formatStunden(stunden) {
+
+        return (
+            stunden.toLocaleString(
+                "de-DE",
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                }
+            ) +
+            " Stunden"
+        );
+
+    }
+
+    function formatEuro(betrag) {
+
+        return betrag.toLocaleString(
+            "de-DE",
+            {
+                style: "currency",
+                currency: "EUR"
+            }
+        );
+
+    }
+
+    /* =========================
+       STUNDEN
+    ========================= */
+
+    function stundenAnzeigen() {
+
+        const monatsPraefix =
+            jahr +
+            "-" +
+            String(monat + 1)
+                .padStart(2, "0") +
+            "-";
+
+        let diakoStunden = 0;
+        let minijobStunden = 0;
+
+        let diakoDienste = 0;
+        let minijobDienste = 0;
+
+        eintraegeLaden().forEach(
+            function (eintrag) {
+
+                if (
+                    !eintrag.datum.startsWith(
+                        monatsPraefix
+                    )
+                ) {
+
+                    return;
+
+                }
+
+                if (
+                    eintrag.kategorie ===
+                    "diako"
+                ) {
+
+                    diakoStunden +=
+                        stundenBerechnen(
+                            eintrag.beginn,
+                            eintrag.ende
+                        );
+
+                    diakoDienste++;
+
+                }
+
+                if (
+                    eintrag.kategorie ===
+                    "minijob"
+                ) {
+
+                    minijobStunden +=
+                        stundenBerechnen(
+                            eintrag.beginn,
+                            eintrag.ende
+                        );
+
+                    minijobDienste++;
+
+                }
+
+            }
+        );
+
+        document
+            .getElementById(
+                "stunden-monat-titel"
+            )
+            .textContent =
+            monate[monat] +
+            " " +
+            jahr;
+
+        document
+            .getElementById(
+                "diako-stunden"
+            )
+            .textContent =
+            formatStunden(
+                diakoStunden
+            );
+
+        document
+            .getElementById(
+                "minijob-stunden"
+            )
+            .textContent =
+            formatStunden(
+                minijobStunden
+            );
+
+        document
+            .getElementById(
+                "diako-dienste"
+            )
+            .textContent =
+            diakoDienste;
+
+        document
+            .getElementById(
+                "minijob-dienste"
+            )
+            .textContent =
+            minijobDienste;
+
+    }
+
+    /* =========================
+       MINIJOB-GEHALT
+    ========================= */
+
+    function gehaltAnzeigen() {
+
+        const monatsPraefix =
+            jahr +
+            "-" +
+            String(monat + 1)
+                .padStart(2, "0") +
+            "-";
+
+        let arbeitsstunden = 0;
+        let nachtstunden = 0;
+
+        eintraegeLaden().forEach(
+            function (eintrag) {
+
+                if (
+                    !eintrag.datum.startsWith(
+                        monatsPraefix
+                    )
+                ) {
+
+                    return;
+
+                }
+
+                /* NUR MINIJOB */
+
+                if (
+                    eintrag.kategorie !==
+                    "minijob"
+                ) {
+
+                    return;
+
+                }
+
+                arbeitsstunden +=
+                    stundenBerechnen(
+                        eintrag.beginn,
+                        eintrag.ende
+                    );
+
+                nachtstunden +=
+                    nachtstundenBerechnen(
+                        eintrag.beginn,
+                        eintrag.ende
+                    );
+
+            }
+        );
+
+        const grundlohn =
+            arbeitsstunden *
+            STUNDENLOHN;
+
+        const nachtzuschlag =
+            nachtstunden *
+            STUNDENLOHN *
+            NACHTZUSCHLAG;
+
+        const gesamt =
+            grundlohn +
+            nachtzuschlag;
+
+        document
+            .getElementById(
+                "gehalt-monat-titel"
+            )
+            .textContent =
+            monate[monat] +
+            " " +
+            jahr;
+
+        document
+            .getElementById(
+                "gehalt-stunden"
+            )
+            .textContent =
+            formatStunden(
+                arbeitsstunden
+            );
+
+        document
+            .getElementById(
+                "grundlohn"
+            )
+            .textContent =
+            formatEuro(
+                grundlohn
+            );
+
+        document
+            .getElementById(
+                "nachtstunden"
+            )
+            .textContent =
+            formatStunden(
+                nachtstunden
+            );
+
+        document
+            .getElementById(
+                "nachtzuschlag"
+            )
+            .textContent =
+            formatEuro(
+                nachtzuschlag
+            );
+
+        document
+            .getElementById(
+                "gehalt-gesamt"
+            )
+            .textContent =
+            formatEuro(
+                gesamt
+            );
+
+    }
+
+    /* =========================
+       MONAT WECHSELN
+    ========================= */
+
+    function monatAendern(richtung) {
+
+        monat += richtung;
+
+        if (monat < 0) {
+
+            monat = 11;
+            jahr--;
+
+        }
+
+        if (monat > 11) {
+
+            monat = 0;
+            jahr++;
+
+        }
+
+        kalenderAnzeigen();
+        stundenAnzeigen();
+        gehaltAnzeigen();
+
+    }
+
+    /* =========================
+       SEITEN
+    ========================= */
+
+    function seiteAnzeigen(seite) {
+
+        document
+            .getElementById(
+                "dienstplan-seite"
+            )
+            .style.display =
+            seite === "dienstplan"
+                ? "block"
+                : "none";
+
+        document
+            .getElementById(
+                "stunden-seite"
+            )
+            .style.display =
+            seite === "stunden"
+                ? "block"
+                : "none";
+
+        document
+            .getElementById(
+                "gehalt-seite"
+            )
+            .style.display =
+            seite === "gehalt"
+                ? "block"
+                : "none";
+
+        document
+            .querySelectorAll(
+                ".navigation button"
+            )
+            .forEach(
+                function (button) {
+
+                    button.classList.remove(
+                        "aktiv"
+                    );
+
+                }
+            );
+
+        document
+            .getElementById(
+                "nav-" + seite
+            )
+            .classList.add(
+                "aktiv"
+            );
+
+        if (seite === "stunden") {
+            stundenAnzeigen();
+        }
+
+        if (seite === "gehalt") {
+            gehaltAnzeigen();
+        }
+
+    }
+
+    /* =========================
+       MONATSBUTTONS
+    ========================= */
+
+    document
+        .getElementById("monat-zurueck")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(-1);
+            }
+        );
+
+    document
+        .getElementById("monat-weiter")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(1);
+            }
+        );
+
+    document
+        .getElementById("stunden-zurueck")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(-1);
+            }
+        );
+
+    document
+        .getElementById("stunden-weiter")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(1);
+            }
+        );
+
+    document
+        .getElementById("gehalt-zurueck")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(-1);
+            }
+        );
+
+    document
+        .getElementById("gehalt-weiter")
+        .addEventListener(
+            "click",
+            function () {
+                monatAendern(1);
+            }
+        );
+
+    /* =========================
+       KATEGORIE
+    ========================= */
+
+    kategorieFeld.addEventListener(
+        "change",
+        zeitenAktualisieren
+    );
+
+    /* =========================
+       NEUER EINTRAG
+    ========================= */
+
+    document
+        .getElementById("neuer-eintrag")
+        .addEventListener(
+            "click",
+            function () {
+
+                formularLeeren();
+
+                eintragFenster.style.display =
+                    "block";
+
+            }
+        );
+
+    /* =========================
+       ABBRECHEN
+    ========================= */
+
+    document
+        .getElementById("eintrag-abbrechen")
+        .addEventListener(
+            "click",
+            function () {
+
+                eintragFenster.style.display =
+                    "none";
+
+            }
+        );
+
+    /* =========================
+       SPEICHERN
+    ========================= */
+
+    document
+        .getElementById("eintrag-speichern")
+        .addEventListener(
+            "click",
+            function () {
+
+                const datum =
+                    document
+                        .getElementById(
+                            "eintrag-datum"
+                        )
+                        .value;
+
+                const kategorie =
+                    kategorieFeld.value;
+
+                const kommentar =
+                    document
+                        .getElementById(
+                            "eintrag-kommentar"
+                        )
+                        .value;
+
+                if (!datum) {
+
+                    alert(
+                        "Bitte wähle ein Datum aus."
+                    );
+
+                    return;
+
+                }
+
+                let beginn = "";
+                let ende = "";
+
+                /* DIAKO FEST */
+
+                if (
+                    kategorie === "diako"
+                ) {
+
+                    beginn = "20:30";
+                    ende = "06:30";
+
+                }
+
+                /* MINIJOB / ARZT */
+
+                else if (
+                    kategorie === "minijob" ||
+                    kategorie === "arzt"
+                ) {
+
+                    beginn =
+                        document
+                            .getElementById(
+                                "eintrag-beginn"
+                            )
+                            .value;
+
+                    ende =
+                        document
+                            .getElementById(
+                                "eintrag-ende"
+                            )
+                            .value;
+
+                }
+
+                if (
+                    kategorie === "minijob" &&
+                    (!beginn || !ende)
+                ) {
+
+                    alert(
+                        "Bitte Beginn und Ende des Minijobs eingeben."
+                    );
+
+                    return;
+
+                }
+
+                const eintrag = {
+
+                    datum: datum,
+                    kategorie: kategorie,
+                    beginn: beginn,
+                    ende: ende,
+                    kommentar: kommentar
+
+                };
+
+                let eintraege =
+                    eintraegeLaden();
+
+                eintraege =
+                    eintraege.filter(
+                        function (alterEintrag) {
+
+                            return (
+                                alterEintrag.datum !==
+                                datum
+                            );
+
+                        }
+                    );
+
+                eintraege.push(
+                    eintrag
+                );
+
+                eintraegeSpeichern(
+                    eintraege
+                );
+
+                eintragFenster.style.display =
+                    "none";
+
+                kalenderAnzeigen();
+                stundenAnzeigen();
+                gehaltAnzeigen();
+
+                alert(
+                    "Eintrag gespeichert."
+                );
+
+            }
+        );
+
+    /* =========================
+       LÖSCHEN
+    ========================= */
+
+    document
+        .getElementById("eintrag-loeschen")
+        .addEventListener(
+            "click",
+            function () {
+
+                const datum =
+                    document
+                        .getElementById(
+                            "eintrag-datum"
+                        )
+                        .value;
+
+                if (!datum) {
+                    return;
+                }
+
+                let eintraege =
+                    eintraegeLaden();
+
+                eintraege =
+                    eintraege.filter(
+                        function (eintrag) {
+
+                            return (
+                                eintrag.datum !==
+                                datum
+                            );
+
+                        }
+                    );
+
+                eintraegeSpeichern(
+                    eintraege
+                );
+
+                eintragFenster.style.display =
+                    "none";
+
+                kalenderAnzeigen();
+                stundenAnzeigen();
+                gehaltAnzeigen();
+
+                alert(
+                    "Eintrag gelöscht."
+                );
+
+            }
+        );
+
+    /* =========================
+       NAVIGATION
+    ========================= */
+
+    document
+        .getElementById("nav-dienstplan")
+        .addEventListener(
+            "click",
+            function () {
+
+                seiteAnzeigen(
+                    "dienstplan"
+                );
+
+            }
+        );
+
+    document
+        .getElementById("nav-stunden")
+        .addEventListener(
+            "click",
+            function () {
+
+                seiteAnzeigen(
+                    "stunden"
+                );
+
+            }
+        );
+
+    document
+        .getElementById("nav-gehalt")
+        .addEventListener(
+            "click",
+            function () {
+
+                seiteAnzeigen(
+                    "gehalt"
+                );
+
+            }
+        );
+
+    /* =========================
+       DATEN SICHERN
+    ========================= */
+
+    document
+        .getElementById("daten-exportieren")
+        .addEventListener(
+            "click",
+            function () {
+
+                const daten =
+                    eintraegeLaden();
+
+                const text =
+                    JSON.stringify(
+                        daten,
+                        null,
+                        2
+                    );
+
+                const blob =
+                    new Blob(
+                        [text],
+                        {
+                            type:
+                                "application/json"
+                        }
+                    );
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+                link.href =
+                    url;
+
+                link.download =
+                    "mein-dienstplan-backup.json";
+
+                document.body.appendChild(
+                    link
+                );
+
+                link.click();
+
+                document.body.removeChild(
+                    link
+                );
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+            }
+        );
+
+    /* =========================
+       BACKUP AUSWÄHLEN
+    ========================= */
+
+    document
+        .getElementById(
+            "daten-import-button"
+        )
+        .addEventListener(
+            "click",
+            function () {
+
+                document
+                    .getElementById(
+                        "daten-importieren"
+                    )
+                    .click();
+
+            }
+        );
+
+    /* =========================
+       BACKUP IMPORTIEREN
+    ========================= */
+
+    document
+        .getElementById(
+            "daten-importieren"
+        )
+        .addEventListener(
+            "change",
+            function (event) {
+
+                const datei =
+                    event.target.files[0];
+
+                if (!datei) {
+                    return;
+                }
+
+                const reader =
+                    new FileReader();
+
+                reader.onload =
+                    function (ereignis) {
+
+                        try {
+
+                            const daten =
+                                JSON.parse(
+                                    ereignis.target.result
+                                );
+
+                            if (
+                                !Array.isArray(
+                                    daten
+                                )
+                            ) {
+
+                                throw new Error(
+                                    "Ungültige Datei"
+                                );
+
+                            }
+
+                            eintraegeSpeichern(
+                                daten
+                            );
+
+                            kalenderAnzeigen();
+                            stundenAnzeigen();
+                            gehaltAnzeigen();
+
+                            alert(
+                                "Sicherung wiederhergestellt."
+                            );
+
+                        }
+
+                        catch (fehler) {
+
+                            alert(
+                                "Die Sicherungsdatei ist ungültig."
+                            );
+
+                        }
+
+                    };
+
+                reader.readAsText(
+                    datei
+                );
+
+            }
+        );
+
+    /* =========================
+       APP START
+    ========================= */
+
+    zeitenAktualisieren();
+    kalenderAnzeigen();
+    stundenAnzeigen();
+    gehaltAnzeigen();
+
+</script>
+
+</body>
+</html>
